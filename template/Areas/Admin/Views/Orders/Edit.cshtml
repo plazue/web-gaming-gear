@@ -1,0 +1,241 @@
+﻿@model template.Models.Order
+@{
+    ViewBag.Title = "Chỉnh sửa đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_adminLayout.cshtml";
+
+    string currentStatus = Model.OrderStatus ?? "Chờ xử lý";
+}
+
+<style>
+    /* --- CSS QUẢN LÝ ĐƠN HÀNG (FORM EDIT) --- */
+    .admin-form-card {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding: 28px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 30px;
+    }
+
+    .admin-form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+        border-bottom: 2px solid #e2efda;
+    }
+
+    .admin-form-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .admin-label {
+        font-weight: 600;
+        color: #334155;
+        font-size: 14px;
+    }
+
+    .admin-input {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #f8fafc;
+        color: #1e293b;
+        transition: all 0.2s ease;
+    }
+
+        .admin-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+    .admin-alert-danger {
+        background-color: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        padding: 12px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .btn-admin-next {
+        background-color: #2563eb;
+        color: #ffffff !important;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 9px 20px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .btn-admin-next:hover {
+            background-color: #1d4ed8;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+        }
+
+    .btn-admin-cancel {
+        background-color: #dc2626;
+        color: #ffffff !important;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 9px 20px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 10px;
+    }
+
+        .btn-admin-cancel:hover {
+            background-color: #b91c1c;
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.25);
+        }
+
+    .btn-admin-back {
+        background-color: #f1f5f9;
+        color: #475569 !important;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 7px 16px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+        .btn-admin-back:hover {
+            background-color: #e2e8f0;
+            color: #1e293b !important;
+        }
+
+    .status-badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+</style>
+
+<div class="admin-form-card">
+    <div class="admin-form-header">
+        <h3 class="admin-form-title">
+            <i class="fa-solid fa-pen-to-square text-warning me-2"></i> CẬP NHẬT ĐƠN HÀNG #@Model.OrderID
+        </h3>
+        @Html.ActionLink("Quay lại danh sách", "Index", null, new { @class = "btn-admin-back" })
+    </div>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+
+        if (!ViewData.ModelState.IsValid)
+        {
+            <div class="admin-alert-danger">
+                @Html.ValidationSummary(true, "")
+            </div>
+        }
+
+        @Html.HiddenFor(model => model.OrderID)
+        @Html.HiddenFor(model => model.CreatedAt)
+        @Html.HiddenFor(model => model.UserID)
+        @Html.HiddenFor(model => model.Subtotal)
+        @Html.HiddenFor(model => model.OrderStatus)
+
+        <div class="row admin-form-group align-items-center mb-3">
+            <label class="col-md-2 admin-label">Khách hàng</label>
+            <div class="col-md-10">
+                <input type="text" class="admin-input" value="@(Model.User != null ? Model.User.Username : "N/A")" disabled />
+            </div>
+        </div>
+
+        <div class="row admin-form-group align-items-center mb-3">
+            <label class="col-md-2 admin-label">Tổng tiền (VNĐ)</label>
+            <div class="col-md-10">
+                <input type="text" class="admin-input" value="@string.Format("{0:N0} đ", Model.Subtotal)" disabled />
+            </div>
+        </div>
+
+        <div class="row admin-form-group align-items-center mb-3">
+            @Html.LabelFor(model => model.OrderNote, "Ghi chú đơn hàng", htmlAttributes: new { @class = "col-md-2 admin-label" })
+            <div class="col-md-10">
+                @Html.TextAreaFor(model => model.OrderNote, 3, 40, new { @class = "admin-input" })
+                @Html.ValidationMessageFor(model => model.OrderNote, "", new { @class = "text-danger small mt-1 d-block" })
+            </div>
+        </div>
+
+        <!-- Trạng thái đơn hàng hiện tại -->
+        <div class="row admin-form-group align-items-center mb-3">
+            @Html.LabelFor(model => model.OrderStatus, "Trạng thái hiện tại", htmlAttributes: new { @class = "col-md-2 admin-label" })
+            <div class="col-md-10">
+                <div>
+                    @if (currentStatus == "Chờ xử lý")
+                    {
+                        <span class="status-badge" style="background-color: #fef3c7; color: #d97706;">Chờ xử lý</span>
+                    }
+                    else if (currentStatus == "Đang giao")
+                    {
+                        <span class="status-badge" style="background-color: #e0f2fe; color: #0284c7;">Đang giao</span>
+                    }
+                    else if (currentStatus == "Hoàn thành")
+                    {
+                        <span class="status-badge" style="background-color: #d1fae5; color: #059669;">Hoàn thành</span>
+                    }
+                    else
+                    {
+                        <span class="status-badge" style="background-color: #fee2e2; color: #dc2626;">Đã hủy</span>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 NÚT THAO TÁC: BƯỚC TIẾP THEO HOẶC HỦY ĐƠN -->
+        <div class="row mt-4">
+            <div class="col-md-10 offset-md-2">
+                @if (currentStatus == "Chờ xử lý")
+                {
+                    <button type="submit" name="actionType" value="Next" class="btn-admin-next">
+                        <i class="fa-solid fa-arrow-right"></i> Chuyển sang Đang giao
+                    </button>
+                    <button type="submit" name="actionType" value="Cancel" class="btn-admin-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                        <i class="fa-solid fa-ban"></i> Hủy đơn hàng
+                    </button>
+                }
+                else if (currentStatus == "Đang giao")
+                {
+                    <button type="submit" name="actionType" value="Next" class="btn-admin-next">
+                        <i class="fa-solid fa-check"></i> Xác nhận Hoàn thành
+                    </button>
+                    <button type="submit" name="actionType" value="Cancel" class="btn-admin-cancel" onclick="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?');">
+                        <i class="fa-solid fa-ban"></i> Hủy đơn hàng
+                    </button>
+                }
+                else
+                {
+                    <span class="text-muted fw-semibold">Đơn hàng này đã kết thúc trạng thái xử lý.</span>
+                }
+            </div>
+        </div>
+    }
+</div>
